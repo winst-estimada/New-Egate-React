@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { clearStoredAuth } from "../api";
+import { clearStoredAuth, api } from "../api";
 
 export default function AdminLogin({
   onLogin,
@@ -22,26 +22,13 @@ export default function AdminLogin({
     setMessage("");
     try {
       clearStoredAuth();
-      const response = await fetch("/api/accounts/login/admin/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: username.trim(),
-          password,
-        }),
+      const response = await api.post("/accounts/login/admin/", {
+        username: username.trim(),
+        password,
       });
 
-      const res = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw {
-          response: {
-            data: res,
-            status: response.status,
-          },
-        };
-      }
+      const res = response.data;
+      console.log("Login response:", res); // DEBUG
 
       const access = res?.tokens?.access;
       const refresh = res?.tokens?.refresh;
@@ -51,12 +38,17 @@ export default function AdminLogin({
       const role = res?.meta?.role || "Administrator";
       localStorage.setItem("role", role);
       if (user) {
-        try { localStorage.setItem("user", JSON.stringify(user)); } catch { return; }
+        try { 
+          localStorage.setItem("user", JSON.stringify(user)); 
+        } catch (e) { 
+          console.error("Failed to save user:", e);
+          throw e;
+        }
         if (user?.username) localStorage.setItem("username", user.username);
       }
       setMessage(res?.message || "Login successful!");
       onLogin?.(role);
-      try { navigate(redirectTo); } catch { return; }
+      navigate(redirectTo);
     } catch (err) {
       setMessage(
         err?.response?.data?.error ||
