@@ -1,12 +1,7 @@
 import axios from "axios";
 
-const isDevelopment = import.meta.env.MODE === 'development';
-const localBase = import.meta.env.VITE_API_BASE_URL_LOCAL || import.meta.env.VITE_API_URL || '/api';
-const deployBase = import.meta.env.VITE_API_BASE_URL_DEPLOY || import.meta.env.VITE_API_URL || '/api';
-const API_BASE_URL = isDevelopment ? localBase : deployBase;
-
 // Prefer explicit Vite env; otherwise use the same-origin Vite proxy path.
-const API_BASE_URL = import.meta?.env?.VITE_API_URL || "/api";
+
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
